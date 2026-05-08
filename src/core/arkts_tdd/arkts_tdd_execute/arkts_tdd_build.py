@@ -195,7 +195,7 @@ def run_abc_files(suite_file, log_path, testcases_path, result_path, index, suit
     log_file = os.path.join(suite_log_path, f"{suite_name}.log")
     command = [
         abs_ark_path, f"--boot-panda-files={abs_etsstdlib_path}", f"--load-runtimes=ets", f"{file_name}",
-        "OpenHarmonyTestRunner::main"]
+        f"OpenHarmonyTestRunner/ETSGLOBAL::main"]
     LOG.info(f"执行命令 {command}")
 
     start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

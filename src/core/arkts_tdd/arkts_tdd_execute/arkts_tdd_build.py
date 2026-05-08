@@ -186,17 +186,18 @@ def run_abc_files(suite_file, log_path, testcases_path, result_path, index, suit
         os.makedirs(suite_result_path)
 
     suite_result_file = os.path.join(suite_result_path, prefix_name + '.xml')
-    os.chdir(suite_file_path)
     """
     执行生成的abc文件并生成报告日志
     """
     abs_ark_path = get_path_code_directory(ARKPATH)
     abs_etsstdlib_path = get_path_code_directory(ETSSTDLIBPATH)
     log_file = os.path.join(suite_log_path, f"{suite_name}.log")
-    command = [
-        abs_ark_path, f"--boot-panda-files={abs_etsstdlib_path}", f"--load-runtimes=ets", f"{file_name}",
-        f"OpenHarmonyTestRunner/ETSGLOBAL::main"]
-    LOG.info(f"执行命令 {command}")
+    # 构建执行命令
+    command = _build_command(
+        suite_file, prefix_name, abs_ark_path, abs_etsstdlib_path, suite_file_path
+    )
+
+    os.chdir(suite_file_path)
 
     start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -236,6 +237,50 @@ def run_abc_files(suite_file, log_path, testcases_path, result_path, index, suit
         error_message = error_message.replace(">", "")
         error_message = error_message.replace("&", "")
         _create_empty_result_file(suite_result_file, prefix_name, error_message)
+
+
+def _build_command(suite_file, prefix_name, abs_ark_path, abs_etsstdlib_path, suite_file_path):
+    """
+    负责构建执行命令。
+    逻辑：检查 out 目录 -> 读取 testRunnerPath.txt -> 构建最终 command 列表。
+    """
+    out_path = os.path.join(suite_file_path, 'out')
+    test_runner_prefix = ""
+
+    # 1. 检查 out 目录是否存在
+    if os.path.exists(out_path):
+        # 2. 构建源码文件路径并检查是否存在
+        abc_file = f"{prefix_name}_source.abc"
+        if os.path.exists(os.path.join(out_path, abc_file)):
+            abs_etsstdlib_path = os.path.join(out_path, abc_file)
+
+        # 3. 读取 testRunnerPath.txt,获取测试入口文件路径
+        test_runner_path = os.path.join(out_path, f"{prefix_name}_testRunnerPath.txt")
+        if os.path.exists(test_runner_path):
+            try:
+                with open(test_runner_path, 'r', encoding='utf-8') as f:
+                    test_runner_prefix = f.read().strip()
+            except Exception as e:
+                LOG.error(f"读取 testRunnerPath.txt 失败：{e}")
+                test_runner_prefix = ""
+        else:
+            LOG.error(f"未找到 testRunnerPath.txt：{test_runner_path}，使用默认路径。")
+
+    # 4. 构建入口点
+    runner_entry = f"{test_runner_prefix}/OpenHarmonyTestRunner/ETSGLOBAL::main" \
+        if test_runner_prefix else "OpenHarmonyTestRunner/ETSGLOBAL::main"
+
+    # 5. 构建最终命令列表
+    command = [
+        abs_ark_path,
+        f"--boot-panda-files={abs_etsstdlib_path}",
+        "--load-runtimes=ets",
+        os.path.basename(suite_file),  # 使用 basename 避免路径过长问题
+        runner_entry
+    ]
+
+    LOG.info(f"执行命令 {command}")
+    return command
 
 
 def get_cst_time():

@@ -81,7 +81,7 @@ export interface AbilityDelegator {
 
   startAbility(want: Want): Promise<void>;
 
-  getCurrentTopAbility(callback: AsyncCallback<UIAbility>);
+  getCurrentTopAbility(callback: AsyncCallback<UIAbility>): void;
 
   getCurrentTopAbility(): Promise<UIAbility>;
 }

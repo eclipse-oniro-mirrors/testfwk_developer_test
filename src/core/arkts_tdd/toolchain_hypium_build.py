@@ -50,20 +50,19 @@ def run_command(command):
     """
     try:
         print(f'{"*" * 35}开始执行命令：{command}{"*" * 35}')
-        command_list = command.split(" ")
-        result = subprocess.run(command_list,
-                                capture_output=True, text=True, check=True)
-        if result.returncode == 0:
-            print("命令执行成功")
-            print("输出:", result.stdout)
-        else:
-            print("命令执行失败")
-            print("错误:", result.stderr)
+        process = subprocess.Popen(
+            command.split(" "),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            bufsize=1,
+            universal_newlines=True
+        )
+        for line in process.stdout:
+            print(line, end='', flush=True)
+        process.wait()
+        if process.returncode != 0:
+            raise Exception(f"命令返回非零退出码: {process.returncode}")
         print(f'{"*" * 35}命令：{command}执行结束{"*" * 35}')
-    except subprocess.CalledProcessError as e:
-        print(f"命令执行失败（返回码: {e.returncode}）")
-        print("错误输出:", e.stderr.strip())
-        raise
     except FileNotFoundError:
         print("错误：未找到 sudo 命令。请确保已安装 sudo。")
         raise
@@ -113,9 +112,21 @@ def run_toolchain_build():
     command_3 = "pip3 install tqdm"
     command_4 = "pip3 install python-dotenv"
     command_5 = "./scripts/install-third-party --force-clone"
-    command_6 = "cmake -B out -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain/host_clang_default.cmake -GNinja ."
+    command_6 = "cmake -B out -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain/host_clang_default.cmake -GNinja -DCMAKE_POSITION_INDEPENDENT_CODE=ON ."
     command_7 = "cmake --build out"
     command_list = [command_1, command_2, command_3, command_4, command_5, command_6, command_7]
+
+    code_dir = get_path_code_directory('')
+    out_dir = os.path.join(code_dir, 'out')
+
+    product_dirs = [d for d in os.listdir(out_dir)
+                    if os.path.isdir(os.path.join(out_dir, d))]
+
+    if 'rk3568' in product_dirs:    
+        command_0_pip = "pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple"
+        command_0_pip_timeout = "pip3 config set global.timeout 120"
+        command_list.insert(0, command_0_pip)
+        command_list.insert(1, command_0_pip_timeout)
 
     for command in command_list:
         try:
@@ -400,24 +411,8 @@ def main():
         run_toolchain_build()  # 会中断失败流程
         # 删除third_party路径下的bundle.json防止编译出错
         delete_specific_files(third_party_path, 'bundle.json')
-        # hypium编译
-        arktstest_output_path = 'out/generic_generic_arm_64only/general_all_phone_standard/tests/arktstdd/hypium'
-        hypium_output_dir = get_path_code_directory(arktstest_output_path)
-        if not os.path.exists(hypium_output_dir):
-            os.makedirs(hypium_output_dir)
-            print(f"目录 {hypium_output_dir} 已创建")
-        else:
-            print(f"目录 {hypium_output_dir} 已存在")
-        # 执行hypium编译
-        build_ets_files(hypium_output_dir)
     except Exception as e:
         print(f"工具链/hypium构建编译失败，无法继续后续流程：{e}")
-        # 删除third_party目录
-        if os.path.exists(third_party_path):
-            shutil.rmtree(third_party_path)  # 递归删除整个目录树
-            print(f"成功删除目录: {third_party_path}")
-        else:
-            print(f"目录不存在: {third_party_path}")
         sys.exit(1)
     # 为用例执行脚本赋可执行权限
     case_build_path = get_path_code_directory(CASEBUILDPATH)

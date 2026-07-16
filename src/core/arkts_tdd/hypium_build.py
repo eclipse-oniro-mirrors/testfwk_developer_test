@@ -51,9 +51,9 @@ def get_build_tools_paths(root_out_dir):
     abs_stdlib_path = os.path.join(root_out_dir, 'ohos_ets', 'build-tools', 'ets2panda', 'lib', 'etsstdlib.abc')
     # 检查工具是否存在
     critical_tools = {
-        "es2panda" : abs_es2panda_path,
-        "arklink" : abs_arklink_path,
-        "stdlib" : abs_stdlib_path
+        "es2panda": abs_es2panda_path,
+        "arklink": abs_arklink_path,
+        "stdlib": abs_stdlib_path
     }
 
     for name, path in critical_tools.items():
@@ -69,9 +69,8 @@ def get_build_tools_paths(root_out_dir):
     }
 
 
-def generate_arktsconfig(build_paths, root_out_dir):
-    # 定义基础映射关系
-    path_mappings = {
+def get_path_mappings():
+    return {
         "@ohos.buffer": "ohos_ets/api/@ohos.buffer.d.ets",
         "@ohos.util.ArrayList": "ohos_ets/api/@ohos.util.ArrayList.d.ets",
         "@ohos.util.HashMap": "ohos_ets/api/@ohos.util.HashMap.d.ets",
@@ -92,12 +91,15 @@ def generate_arktsconfig(build_paths, root_out_dir):
         "@ohos.app.ability.Want": "test/testfwk/developer_test/libs/arkts1.2/@ohos.app.ability.Want.ets",
         "AbilityMonitor": "test/testfwk/developer_test/libs/arkts1.2/AbilityMonitor.ets",
         "ShellCmdResult": "test/testfwk/developer_test/libs/arkts1.2/ShellCmdResult.ets",
-
         "@ohos.util.Deque": "ohos_ets/api/@ohos.util.Deque.d.ets",
         "@ohos.util.HashSet": "ohos_ets/api/@ohos.util.HashSet.d.ets",
         "@ohos.util.LightWeightMap": "ohos_ets/api/LightWeightMap.d.ets",
     }
 
+
+def generate_arktsconfig(build_paths, root_out_dir):
+    # 定义基础映射关系
+    path_mappings = get_path_mappings()
     config = {
         "compilerOptions": {
             "baseUrl": "..",
@@ -127,7 +129,7 @@ def generate_arktsconfig(build_paths, root_out_dir):
         if rel_path.startswith("test/"):
             full_path = get_path_code_directory(rel_path)
         else:
-            full_path = os.path.join(root_out_dir,rel_path)
+            full_path = os.path.join(root_out_dir, rel_path)
         # 检查文件是否存在
         if not os.path.exists(full_path):
             print(f"Warning: 路径映射'{key}'指向的文件不存在：{full_path}")

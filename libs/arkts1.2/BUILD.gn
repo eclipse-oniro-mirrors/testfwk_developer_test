@@ -19,6 +19,11 @@ config("base_private_config") {
 }
 
 action("arkts_global_pre_build") {
-  script = "../../src/core/arkts_tdd/toolchain_hypium_build.py"
+  script = "../../src/core/arkts_tdd/hypium_build.py"
+  args = [
+    "--root_out_dir",
+    rebase_path("$root_out_dir")
+  ]
   outputs = [ "$target_gen_dir/arkts_global_pre_build.stamp" ]
 }
+

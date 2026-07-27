@@ -1218,12 +1218,6 @@
         "buildTarget": "multimedia/audio_framework:audio_framework_test,multimedia/media_foundation:media_foundation_test"
     },
     {
-        "name": "third_party_qrcodegen",
-        "parts": "qrcodegen",
-        "selfTarget": "arkui/ace_engine:ace_engine_test",
-        "buildTarget": "arkui/ace_engine:ace_engine_test"
-    },
-    {
         "name": "third_party_toybox",
         "parts": "toybox",
         "selfTarget": "startup/init:init_test",

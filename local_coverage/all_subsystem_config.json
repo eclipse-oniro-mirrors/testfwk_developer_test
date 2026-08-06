@@ -1970,5 +1970,11 @@
     "path": [
       "vendor/huawei/foundation/graphics_game/game_accelerate_schedule"
     ]
+  },
+  "fusion_communication_framework": {
+    "name": "fusion_communication_framework",
+    "path": [
+      "vendor/huawei/foundation/communication/fusion_communication_framework"
+    ]
   }
 }

@@ -18,7 +18,11 @@
         "adapted_system_type": [ "mini", "small", "standard" ],
           "rom": "0KB",
           "ram": "0KB",
-          "deps": {},
+          "deps": {
+            "components": [
+              "bounds_checking_function"
+            ]
+          },
     "build": {
       "sub_component": [
             "//test/testfwk/developer_test/examples/app_info:app_info",

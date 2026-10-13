@@ -72,6 +72,9 @@ class ResourceManager(object):
                 targets = root.iter("target")
                 for target in targets:
                     curr_dic = target.attrib
+                    if "name" not in curr_dic:
+                        continue
+                        
                     if curr_dic.get("name") == targe_tname or \
                             targe_tname.startswith(curr_dic.get("name")):
                         node = target
